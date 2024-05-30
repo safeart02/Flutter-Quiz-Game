@@ -3,23 +3,41 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  runApp(QuizApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => QuizProvider(),
+      child: MyApp(),
+    ),
+  );
 }
 
-class QuizApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => QuizProvider(),
-      child: MaterialApp(
-        title: 'Quiz App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: SplashScreen(),
-      ),
+    return MaterialApp(
+      title: 'Quiz App',
+      home: SplashScreen(),
     );
   }
+}
+
+class QuizProvider with ChangeNotifier {
+  String _name = '';
+  Map<String, int> _scores = {};
+
+  void setName(String name) {
+    _name = name;
+    notifyListeners();
+  }
+
+  String get name => _name;
+
+  void setScore(String category, int score) {
+    _scores[category] = score;
+    notifyListeners();
+  }
+
+  Map<String, int> get allScores => _scores;
 }
 
 class SplashScreen extends StatefulWidget {
@@ -72,7 +90,7 @@ class LoginScreen extends StatelessWidget {
                 Provider.of<QuizProvider>(context, listen: false).setName(name);
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => MainPage(name: name)),
+                  MaterialPageRoute(builder: (context) => MainMenu()),
                 );
               },
               child: Text('Log In'),
@@ -84,13 +102,11 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class MainPage extends StatelessWidget {
-  final String name;
-
-  MainPage({required this.name});
-
+class MainMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final name = Provider.of<QuizProvider>(context).name;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Welcome'),
@@ -127,6 +143,14 @@ class MainPage extends StatelessWidget {
               },
               child: Text('Larawan ng Lahi'),
             ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => LeaderboardsScreen()));
+              },
+              child: Text('Leaderboards'),
+            ),
           ],
         ),
       ),
@@ -148,7 +172,9 @@ class MenuSheet extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.leaderboard),
             title: Text('Leaderboards'),
-            onTap: () {},
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => LeaderboardsScreen()));
+            },
           ),
           ListTile(
             leading: Icon(Icons.logout),
@@ -215,6 +241,7 @@ class _KasaysayanScreenState extends State<KasaysayanScreen> {
     Question('Question 2', ['A', 'B', 'C', 'D'], 'B'),
   ];
   String? _selectedAnswer;
+  bool? _isCorrect;
 
   @override
   Widget build(BuildContext context) {
@@ -231,28 +258,35 @@ class _KasaysayanScreenState extends State<KasaysayanScreen> {
           children: [
             Text(question.question, style: TextStyle(fontSize: 24)),
             ...question.options.map((option) => ElevatedButton(
-              onPressed: () {
+              onPressed: _selectedAnswer == null ? () {
                 setState(() {
                   _selectedAnswer = option;
+                  _isCorrect = option == question.correctAnswer;
                 });
-              },
+              } : null,
               child: Text(option),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _selectedAnswer == option ? Colors.blue : null,
+                backgroundColor: _selectedAnswer == option
+                    ? (_isCorrect == true ? Colors.green : Colors.red)
+                    : null,
               ),
             )),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: _selectedAnswer != null ? () {
+                if (_isCorrect == true) {
+                  Provider.of<QuizProvider>(context, listen: false).setScore('Kasaysayan', _currentQuestionIndex + 1);
+                }
                 if (_currentQuestionIndex < _questions.length - 1) {
                   setState(() {
                     _currentQuestionIndex++;
                     _selectedAnswer = null;
+                    _isCorrect = null;
                   });
                 } else {
                   Navigator.pop(context);
                 }
-              },
+              } : null,
               child: Text('Next'),
             ),
           ],
@@ -274,6 +308,7 @@ class _TalasalitaanScreenState extends State<TalasalitaanScreen> {
     Question('Question 2', ['A', 'B', 'C', 'D'], 'B'),
   ];
   String? _selectedAnswer;
+  bool? _isCorrect;
 
   @override
   Widget build(BuildContext context) {
@@ -288,32 +323,37 @@ class _TalasalitaanScreenState extends State<TalasalitaanScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Replace this with an Image widget for the actual image
-            Placeholder(fallbackHeight: 200),
             Text(question.question, style: TextStyle(fontSize: 24)),
             ...question.options.map((option) => ElevatedButton(
-              onPressed: () {
+              onPressed: _selectedAnswer == null ? () {
                 setState(() {
                   _selectedAnswer = option;
+                  _isCorrect = option == question.correctAnswer;
                 });
-              },
+              } : null,
               child: Text(option),
               style: ElevatedButton.styleFrom(
-                backgroundColor: _selectedAnswer == option ? Colors.blue : null,
+                backgroundColor: _selectedAnswer == option
+                    ? (_isCorrect == true ? Colors.green : Colors.red)
+                    : null,
               ),
             )),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
+              onPressed: _selectedAnswer != null ? () {
+                if (_isCorrect == true) {
+                  Provider.of<QuizProvider>(context, listen: false).setScore('Talasalitaan', _currentQuestionIndex + 1);
+                }
                 if (_currentQuestionIndex < _questions.length - 1) {
                   setState(() {
                     _currentQuestionIndex++;
                     _selectedAnswer = null;
+                    _isCorrect = null;
                   });
                 } else {
                   Navigator.pop(context);
                 }
-              },
+              } : null,
               child: Text('Next'),
             ),
           ],
@@ -323,15 +363,68 @@ class _TalasalitaanScreenState extends State<TalasalitaanScreen> {
   }
 }
 
-class GramatikaScreen extends StatelessWidget {
+class GramatikaScreen extends StatefulWidget {
+  @override
+  _GramatikaScreenState createState() => _GramatikaScreenState();
+}
+
+class _GramatikaScreenState extends State<GramatikaScreen> {
+  int _currentQuestionIndex = 0;
+  List<Question> _questions = [
+    Question('Question 1', ['A', 'B', 'C', 'D'], 'A'),
+    Question('Question 2', ['A', 'B', 'C', 'D'], 'B'),
+  ];
+  String? _selectedAnswer;
+  bool? _isCorrect;
+
   @override
   Widget build(BuildContext context) {
+    final question = _questions[_currentQuestionIndex];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Gramatika'),
       ),
-      body: Center(
-        child: Text('Gramatika Screen'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(question.question, style: TextStyle(fontSize: 24)),
+            ...question.options.map((option) => ElevatedButton(
+              onPressed: _selectedAnswer == null ? () {
+                setState(() {
+                  _selectedAnswer = option;
+                  _isCorrect = option == question.correctAnswer;
+                });
+              } : null,
+              child: Text(option),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _selectedAnswer == option
+                    ? (_isCorrect == true ? Colors.green : Colors.red)
+                    : null,
+              ),
+            )),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _selectedAnswer != null ? () {
+                if (_isCorrect == true) {
+                  Provider.of<QuizProvider>(context, listen: false).setScore('Gramatika', _currentQuestionIndex + 1);
+                }
+                if (_currentQuestionIndex < _questions.length - 1) {
+                  setState(() {
+                    _currentQuestionIndex++;
+                    _selectedAnswer = null;
+                    _isCorrect = null;
+                  });
+                } else {
+                  Navigator.pop(context);
+                }
+              } : null,
+              child: Text('Next'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -343,84 +436,111 @@ class LarawanLahiScreen extends StatefulWidget {
 }
 
 class _LarawanLahiScreenState extends State<LarawanLahiScreen> {
-  List<String> words = ['Bahay', 'Lupa', 'Puno'];
-  List<String> images = [
-    'assets/images/bahay.jpg',
-    'assets/images/lupa.jpg',
-    'assets/images/puno.jpg'
-  ];
-  int currentIndex = 0;
-  bool isCorrect = false;
+  int _currentRoundIndex = 0;
 
-  void _nextQuestion() {
-    setState(() {
-      currentIndex = (currentIndex + 1) % words.length;
-      isCorrect = false;
-    });
-  }
+  List<List<String>> _imageSets = [
+    ['assets/images/image1.png', 'assets/images/image2.png', 'assets/images/image3.png'],
+    ['assets/images/image4.png', 'assets/images/image5.png', 'assets/images/image6.png'],
+    ['assets/images/image7.png', 'assets/images/image8.png', 'assets/images/image9.png'],
+  ];
+
+  List<List<String>> _correctAnswers = [
+    ['Word1', 'Word2', 'Word3'],
+    ['Word4', 'Word5', 'Word6'],
+    ['Word7', 'Word8', 'Word9'],
+  ];
+
+  String? _draggedWord;
+  String? _correctImage;
+  bool? _isCorrect;
 
   @override
   Widget build(BuildContext context) {
+    List<String> currentImages = _imageSets[_currentRoundIndex];
+    List<String> correctAnswers = _correctAnswers[_currentRoundIndex];
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Larawan ng Lahi'),
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: images.map((image) {
-              return DragTarget<String>(
-                onAccept: (receivedItem) {
-                  setState(() {
-                    isCorrect = (receivedItem == words[images.indexOf(image)]);
-                    if (isCorrect) _nextQuestion();
-                  });
-                },
-                builder: (context, acceptedItems, rejectedItems) {
-                  return Container(
-                    height: 100,
-                    width: 100,
-                    child: Image.asset(image),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: isCorrect && words[images.indexOf(image)] == words[currentIndex]
-                            ? Colors.green
-                            : Colors.black,
-                        width: 2,
-                      ),
-                    ),
-                  );
-                },
-              );
-            }).toList(),
-          ),
-          SizedBox(height: 20),
-          Draggable<String>(
-            data: words[currentIndex],
-            feedback: Material(
-              child: Text(words[currentIndex],
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  )),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: currentImages.map((image) {
+                return DragTarget<String>(
+                  onAccept: (data) {
+                    setState(() {
+                      _correctImage = correctAnswers.contains(data) ? image : null;
+                      _isCorrect = correctAnswers.contains(data);
+                    });
+                    if (_isCorrect == true) {
+                      Provider.of<QuizProvider>(context, listen: false).setScore('Larawan ng Lahi', 1);
+                    }
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return Container(
+                      height: 100,
+                      width: 100,
+                      color: (_isCorrect == true && _correctImage == image)
+                          ? Colors.green
+                          : (_isCorrect == false && _correctImage == image)
+                              ? Colors.red
+                              : Colors.transparent,
+                      child: Image.asset(image, fit: BoxFit.cover),
+                    );
+                  },
+                );
+              }).toList(),
             ),
-            childWhenDragging: Container(),
-            child: Text(words[currentIndex],
-                style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                )),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _nextQuestion,
-            child: Text('Next'),
-          ),
-        ],
+            Draggable<String>(
+              data: correctAnswers.first,
+              child: Chip(label: Text(correctAnswers.first)),
+              feedback: Chip(label: Text(correctAnswers.first), backgroundColor: Colors.blue),
+              childWhenDragging: Chip(label: Text(correctAnswers.first), backgroundColor: Colors.grey),
+            ),
+            ElevatedButton(
+              onPressed: _isCorrect != null ? () {
+                if (_currentRoundIndex < _imageSets.length - 1) {
+                  setState(() {
+                    _currentRoundIndex++;
+                    _correctImage = null;
+                    _isCorrect = null;
+                  });
+                } else {
+                  Navigator.pop(context);
+                }
+              } : null,
+              child: Text('Next'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LeaderboardsScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final scores = Provider.of<QuizProvider>(context).allScores;
+    final name = Provider.of<QuizProvider>(context).name;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Leaderboards'),
+      ),
+      body: ListView(
+        children: scores.entries.map((entry) {
+          return ListTile(
+            title: Text('Category: ${entry.key}'),
+            subtitle: Text('Score: ${entry.value}'),
+            trailing: Text(name),
+          );
+        }).toList(),
       ),
     );
   }
@@ -432,15 +552,4 @@ class Question {
   final String correctAnswer;
 
   Question(this.question, this.options, this.correctAnswer);
-}
-
-class QuizProvider with ChangeNotifier {
-  String _name = '';
-
-  void setName(String name) {
-    _name = name;
-    notifyListeners();
-  }
-
-  String get name => _name;
 }
