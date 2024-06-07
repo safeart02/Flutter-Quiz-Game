@@ -1,4 +1,4 @@
-name: final_flutter_project
+name: tuklas_pilipinas
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
@@ -11,7 +11,8 @@ dependencies:
     sdk: flutter
   provider: ^6.0.5
   shared_preferences: ^2.0.15
-
+  audioplayers: ^6.0.0
+  animated_background: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -20,6 +21,17 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  fonts:
+    - family: custom_font1
+      fonts:
+        - asset: assets/fonts/cfont1.otf
+    - family: custom_font2
+      fonts:
+        - asset: assets/fonts/cfont2.ttf
+    - family: custom_font3
+      fonts:
+        - asset: assets/fonts/cfont3.ttf
+
   assets:
     - assets/images/image1.png
     - assets/images/image2.png
@@ -30,3 +42,16 @@ flutter:
     - assets/images/image7.png
     - assets/images/image8.png
     - assets/images/image9.png
+    - assets/images/talasalitaan1.png
+    - assets/images/talasalitaan2.png
+    - assets/images/TuklasPilipinas_LOGO.png
+    - assets/sounds/game_start.mp3
+    - assets/sounds/start_sfx.mp3
+    - assets/sounds/start_screen.mp3
+    - assets/sounds/quiz_start.mp3
+    - assets/sounds/phantom.mp3
+    - assets/sounds/layer_cake.mp3
+    - assets/icons/start_icon.png
+    - assets/icons/aboutus_icon.png
+    - assets/icons/exit_icon.png
+    - assets/bg/star.png
