@@ -13,6 +13,7 @@ dependencies:
   shared_preferences: ^2.0.15
   audioplayers: ^6.0.0
   animated_background: ^2.0.0
+  soundpool: ^2.4.1
 
 dev_dependencies:
   flutter_test:
@@ -47,6 +48,8 @@ flutter:
     - assets/images/TuklasPilipinas_LOGO.png
     - assets/sounds/game_start.mp3
     - assets/sounds/start_sfx.mp3
+    - assets/sounds/select_sfx.mp3
+    - assets/sounds/next.mp3
     - assets/sounds/start_screen.mp3
     - assets/sounds/quiz_start.mp3
     - assets/sounds/phantom.mp3
@@ -55,3 +58,7 @@ flutter:
     - assets/icons/aboutus_icon.png
     - assets/icons/exit_icon.png
     - assets/bg/star.png
+    - assets/bg/ans_bg.png
+    - assets/bg/qs.png
+    - assets/bg/bg.png
+    - assets/bg/wirefence.png
